@@ -10,7 +10,9 @@ VPATH += src/model \
 
 SOURCES += \
         main.cpp \
-        src/model/CalculatorModel.cpp
+        src/model/ArithmeticFactory.cpp \
+        src/model/CalculatorModel.cpp \
+        src/presenter/CalculatorPresenter.cpp
 
 RESOURCES += gui/qml.qrc
 
@@ -29,6 +31,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    src/model/ArithmeticFactory.h \
+    src/model/ArithmeticStrategies.h \
     src/model/CalculatorModel.h \
     src/model/IArithmeticStrategy.h \
-    src/model/arithmetic_strategies.h
+    src/presenter/CalculatorPresenter.h
