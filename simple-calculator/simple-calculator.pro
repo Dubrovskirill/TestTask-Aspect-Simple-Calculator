@@ -28,4 +28,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    src/model/IArithmeticStrategy.h
+    src/model/IArithmeticStrategy.h \
+    src/model/arithmetic_strategies.h
