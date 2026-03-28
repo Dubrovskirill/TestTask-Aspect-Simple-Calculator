@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>CalculatorButton.qml</file>
+        <file>icons/moon.svg</file>
+        <file>icons/sun.svg</file>
     </qresource>
 </RCC>

@@ -13,9 +13,6 @@ Rectangle {
     radius: 12
     color: mouseArea.pressed ? pressedColor : baseColor
 
-    Behavior on color {
-        ColorAnimation { duration: 100 }
-    }
 
     Text {
         anchors.centerIn: parent
