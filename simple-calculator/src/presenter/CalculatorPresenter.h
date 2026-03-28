@@ -43,6 +43,7 @@ private:
     void updateHistory(const QString &value);
     void setError(bool error);
 
+
 private:
     CalculatorModel m_model;
 
@@ -50,6 +51,7 @@ private:
     QString m_history;
     bool m_isError;
     bool m_waitingForNewOperand;
+    bool m_isFinalResult = false;
 
     using ActionHandler = std::function<void()>;
     QMap<QString, ActionHandler> m_actions;

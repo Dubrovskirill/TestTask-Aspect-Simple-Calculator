@@ -18,6 +18,8 @@ public:
 
     void clear();
 
+    bool hasStrategy() const { return m_currentStrategy != nullptr; }
+
 private:
     double m_leftOperand;
     double m_rightOperand;
