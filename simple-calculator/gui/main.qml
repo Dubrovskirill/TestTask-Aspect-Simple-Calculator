@@ -7,43 +7,43 @@ Window {
     id: window
     width: 360
     height: 640
+    minimumWidth: 320
+    minimumHeight: 520
     visible: true
-    title: "Modern Calculator"
-    color: "#1b1c21"
+    title: "Simple Calculator"
+    color: "#1a1b28"
 
     CalculatorPresenter {
         id: presenter
     }
 
-    Column {
+    ColumnLayout {
         anchors.fill: parent
         spacing: 0
 
-
-        Rectangle {
-            width: parent.width
-            height: parent.height * 0.35
-            color: "transparent"
+        // Блок отображения (35% высоты примерно)
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: parent.height * 0.35
 
             Column {
                 anchors.fill: parent
                 anchors.margins: 25
-                anchors.topMargin: 70
+                anchors.topMargin: 50
                 spacing: 12
 
                 RowLayout {
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    spacing: 18
+                    width: parent.width
+                    spacing: 12
 
                     Text {
                         id: equalsSign
                         text: "="
-                        color: "#51b9c1"
-                        font.pixelSize: 72
+                        color: "#52c9dc"
+                        font.pixelSize: 40
+                        font.letterSpacing: -3
                         font.weight: Font.Light
-
-                        Layout.alignment: Qt.AlignBottom
+                        Layout.alignment: Qt.AlignVCenter
                     }
 
                     Text {
@@ -53,77 +53,69 @@ Window {
                         font.pixelSize: 72
                         font.weight: Font.DemiBold
                         font.family: "Roboto"
-
                         Layout.fillWidth: true
                         horizontalAlignment: Text.AlignRight
                         fontSizeMode: Text.Fit
-                        minimumPixelSize: 45
+                        minimumPixelSize: 40
                         maximumLineCount: 1
                         elide: Text.ElideRight
                     }
                 }
 
+                // Разделитель
                 Rectangle {
                     width: parent.width
                     height: 1
-                    color: "#3a3f4b"
-
+                    color: "#1e2435"
                 }
 
                 Text {
-                    text: presenter.history
-                    color: "#7e8492"
+                    property string rawHistory: presenter.history
+                    text: {
+                        let h = rawHistory.replace(/\*/g, "×");
+                        return h.replace(/([+\-×/])/g, "<font color='#52c9dc'>$1</font>");
+                    }
+                    color: "#ffffff"
                     font.pixelSize: 21
-                    anchors.right: parent.right
-                    font.family: "Roboto"
+                    width: parent.width
+                    textFormat: Text.RichText
+                    horizontalAlignment: Text.AlignRight
                 }
             }
         }
 
-        Item {
-            width: parent.width
-            height: parent.height * 0.65
+        // Блок кнопок
+        GridLayout {
+            id: buttonGrid
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.margins: 15
+            columns: 4
+            rowSpacing: 13
+            columnSpacing: 13
 
-            GridLayout {
-                id: buttonGrid
-                anchors.fill: parent
-                anchors.margins: 15
-                columns: 4
-                rows: 5
-                rowSpacing: 13
-                columnSpacing: 13
+            readonly property var operators: ["CE", "+/-", "%", "/", "*", "-", "+", "="]
 
-                function isOperator(val) {
-                    return ["CE", "+/-", "%", "/", "*", "-", "+", "="].indexOf(val) !== -1
-                }
+            Repeater {
+                model: [
+                    "CE", "+/-", "%", "/",
+                    "7", "8", "9", "*",
+                    "4", "5", "6", "-",
+                    "1", "2", "3", "+",
+                    "0", ".", "="
+                ]
 
-                Repeater {
-                    model: [
-                        "CE", "+/-", "%", "/",
-                        "7", "8", "9", "*",
-                        "4", "5", "6", "-",
-                        "1", "2", "3", "+",
-                        "0", ".", "=", ""
-                    ]
+                CalculatorButton {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
 
-                    CalculatorButton {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        Layout.rowSpan: modelData === "+" ? 2 : 1
-                        Layout.column: modelData === "=" ? 2 : -1
-                        Layout.row: modelData === "=" ? 4 : -1
+                    // Логика объединения ячеек для "+"
+                    Layout.rowSpan: modelData === "+" ? 2 : 1
 
-                        visible: modelData !== ""
-                        enabled: modelData !== ""
+                    text: modelData
+                    baseColor: buttonGrid.operators.indexOf(modelData) !== -1 ? "#52c9dc" : "#1e2435"
 
-                        text: modelData
-                        baseColor: buttonGrid.isOperator(modelData) ? "#51b9c1" : "#242933"
-                        textColor: "#ffffff"
-                        radius: 12
-                        fontWeight: Font.Medium
-
-                        onClicked: if (modelData !== "") presenter.processInput(modelData)
-                    }
+                    onClicked: presenter.processInput(modelData)
                 }
             }
         }
