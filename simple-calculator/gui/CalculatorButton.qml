@@ -5,32 +5,27 @@ Rectangle {
 
     property string text: ""
     property color baseColor: "#2c313c"
-    property color pressedColor: Qt.darker(baseColor, 1.2)
+    property color pressedColor: Qt.darker(baseColor, 1.25)
     property color textColor: "#ffffff"
-    property real fontHeight: 0.35
+    property int fontWeight: Font.Medium
 
     signal clicked(string val)
 
-    implicitWidth: 80
-    implicitHeight: 80
     radius: 12
-
-
     color: mouseArea.pressed ? pressedColor : baseColor
 
-
     Behavior on color {
-        ColorAnimation { duration: 100 }
+        ColorAnimation { duration: 80 }
     }
 
     Text {
-        id: buttonText
-        text: control.text
         anchors.centerIn: parent
+        text: control.text
         color: control.textColor
-        font.pixelSize: parent.height * fontHeight
+        font.pixelSize: parent.height * 0.45
         font.family: "Roboto, Segoe UI, sans-serif"
-        font.weight: Font.Normal
+        font.weight: control.fontWeight
+        font.letterSpacing: control.text === "+" ? -2 : 0
     }
 
     MouseArea {
