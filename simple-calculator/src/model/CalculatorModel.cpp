@@ -35,3 +35,9 @@ void CalculatorModel::clear() {
     m_rightOperand = 0.0;
     m_currentStrategy.reset(nullptr);
 }
+
+
+double CalculatorModel::calculatePreview() const {
+    if (!m_currentStrategy) return m_leftOperand;
+    return m_currentStrategy->execute(m_leftOperand, m_rightOperand);
+}

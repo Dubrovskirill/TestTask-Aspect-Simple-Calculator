@@ -20,6 +20,8 @@ public:
 
     bool hasStrategy() const { return m_currentStrategy != nullptr; }
 
+    double calculatePreview() const;
+
 private:
     double m_leftOperand;
     double m_rightOperand;

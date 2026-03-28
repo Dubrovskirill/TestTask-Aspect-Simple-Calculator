@@ -4,8 +4,9 @@
 
 CalculatorPresenter::CalculatorPresenter(QObject *parent)
     : QObject(parent)
-    , m_display("0")
+    , m_display("")
     , m_history("")
+    , m_currentInput("")
     , m_isError(false)
     , m_waitingForNewOperand(true)
 {
@@ -16,9 +17,6 @@ void CalculatorPresenter::initializeActions() {
     m_actions.insert("=",   [this]() { handleCalculate(); });
     m_actions.insert("CE",  [this]() { handleClear(); });
     m_actions.insert("+/-", [this]() { handleSignChange(); });
-    m_actions.insert(".",   [this]() {
-        if (!m_display.contains(".")) updateDisplay(m_display + ".");
-    });
 }
 
 void CalculatorPresenter::processInput(const QString &key) {
@@ -28,6 +26,7 @@ void CalculatorPresenter::processInput(const QString &key) {
         if (m_isFinalResult) {
             updateDisplay("0");
             updateHistory("");
+            m_currentInput = "";
             m_model.clear();
             m_isFinalResult = false;
         }
@@ -67,52 +66,80 @@ void CalculatorPresenter::processInput(const QString &key) {
 }
 
 void CalculatorPresenter::handleDigit(const QString &digit) {
-    if (m_waitingForNewOperand) {
-        if (digit == ".") {
-            updateDisplay("0.");
+    if (digit == "." && m_currentInput.contains(".")) {
+        return;
+    }
+
+    QString oldInput = m_currentInput;
+
+    if (m_currentInput.isEmpty() && digit == ".") {
+        m_currentInput = "0.";
+    } else if (m_currentInput == "0") {
+        if (digit == "0") {
+            return;
+        } else if (digit != ".") {
+            m_currentInput = digit;
         } else {
-            updateDisplay(digit);
+            m_currentInput += digit;
         }
-        m_waitingForNewOperand = false;
-        return;
-    }
-
-    if (digit == "." && m_display.contains(".")) {
-        return;
-    }
-
-    if (m_display == "0" && digit != ".") {
-        updateDisplay(digit);
     } else {
-        updateDisplay(m_display + digit);
+        m_currentInput += digit;
     }
+
+
+    if (m_history.endsWith(oldInput) && !oldInput.isEmpty()) {
+        QString baseHistory = m_history.left(m_history.length() - oldInput.length());
+        updateHistory(baseHistory + m_currentInput);
+    } else {
+        updateHistory(m_history + m_currentInput);
+    }
+
+    if (m_model.hasStrategy()) {
+        double val = m_currentInput.isEmpty() ? 0.0 : m_currentInput.toDouble();
+        m_model.setRightOperand(val);
+        try {
+            double res = m_model.calculatePreview();
+            updateDisplay(QString::number(res, 'g', 10));
+        } catch (...) {}
+    } else {
+        updateDisplay(m_currentInput);
+    }
+
+    m_waitingForNewOperand = false;
 }
 
 void CalculatorPresenter::handleOperation(const QString &op) {
-    QString newHistory = m_history;
 
-    if (!newHistory.isEmpty()) {
-        newHistory += " ";
-    }
-    newHistory += m_display + " " + op;
+    if (m_currentInput.isEmpty() && !m_history.isEmpty()) {
+        QString tempHistory = m_history.trimmed();
+        tempHistory.chop(1);
+        updateHistory(tempHistory.trimmed() + " " + op + " ");
 
-    updateHistory(newHistory);
-
-    if (m_model.hasStrategy() && !m_waitingForNewOperand) {
-        m_model.setRightOperand(m_display.toDouble());
-        try {
-            double result = m_model.calculate();
-            updateDisplay(QString::number(result, 'g', 10));
-        } catch (...) {
-            setError(true);
-            return;
-        }
-    }
-
-    auto strategy = ArithmeticFactory::create(op);
-    if (strategy) {
-        m_model.setLeftOperand(m_display.toDouble());
+        auto strategy = ArithmeticFactory::create(op);
         m_model.setStrategy(std::move(strategy));
+        return;
+    }
+
+    if (!m_currentInput.isEmpty()) {
+        if (m_model.hasStrategy()) {
+            m_model.setRightOperand(m_currentInput.toDouble());
+            try {
+                double result = m_model.calculate();
+                updateDisplay(QString::number(result, 'g', 10));
+            } catch (...) {
+                setError(true);
+                return;
+            }
+        } else {
+            m_model.setLeftOperand(m_currentInput.toDouble());
+        }
+
+        updateHistory(m_history + " " + op + " ");
+
+        auto strategy = ArithmeticFactory::create(op);
+        m_model.setStrategy(std::move(strategy));
+
+        m_currentInput = "";
         m_waitingForNewOperand = true;
     }
 }
@@ -121,14 +148,15 @@ void CalculatorPresenter::handleCalculate() {
     if (!m_model.hasStrategy()) return;
 
     try {
-        updateHistory(m_history + " " + m_display);
 
-        m_model.setRightOperand(m_display.toDouble());
+        m_model.setRightOperand(m_currentInput.toDouble());
         double result = m_model.calculate();
-
         updateDisplay(QString::number(result, 'g', 10));
+
         m_model.clear();
+        m_currentInput = "";
         m_waitingForNewOperand = true;
+
     } catch (const std::runtime_error& e) {
         setError(true);
         updateDisplay(e.what());
@@ -136,11 +164,14 @@ void CalculatorPresenter::handleCalculate() {
 }
 
 void CalculatorPresenter::handleClear() {
+
     m_model.clear();
-    updateDisplay("0");
+    m_currentInput = "";
+    updateDisplay("");
     updateHistory("");
     setError(false);
     m_waitingForNewOperand = true;
+    m_isFinalResult = false;
 }
 
 void CalculatorPresenter::handleSignChange() {

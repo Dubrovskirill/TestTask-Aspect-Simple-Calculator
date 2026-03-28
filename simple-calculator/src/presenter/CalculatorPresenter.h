@@ -49,6 +49,7 @@ private:
 
     QString m_display;
     QString m_history;
+    QString m_currentInput;
     bool m_isError;
     bool m_waitingForNewOperand;
     bool m_isFinalResult = false;
