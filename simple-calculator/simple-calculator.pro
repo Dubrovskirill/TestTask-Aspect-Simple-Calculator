@@ -1,0 +1,38 @@
+QT += quick
+
+# You can make your code fail to compile if it uses deprecated APIs.
+# In order to do so, uncomment the following line.
+#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+
+VPATH += src/model \
+         src/presenter \
+         gui
+
+SOURCES += \
+        main.cpp \
+        src/model/ArithmeticFactory.cpp \
+        src/model/CalculatorModel.cpp \
+        src/presenter/CalculatorPresenter.cpp
+
+RESOURCES += gui/qml.qrc
+
+INCLUDEPATH += src/model \
+               src/presenter
+
+# Additional import path used to resolve QML modules in Qt Creator's code model
+QML_IMPORT_PATH =
+
+# Additional import path used to resolve QML modules just for Qt Quick Designer
+QML_DESIGNER_IMPORT_PATH =
+
+# Default rules for deployment.
+qnx: target.path = /tmp/$${TARGET}/bin
+else: unix:!android: target.path = /opt/$${TARGET}/bin
+!isEmpty(target.path): INSTALLS += target
+
+HEADERS += \
+    src/model/ArithmeticFactory.h \
+    src/model/ArithmeticStrategies.h \
+    src/model/CalculatorModel.h \
+    src/model/IArithmeticStrategy.h \
+    src/presenter/CalculatorPresenter.h
