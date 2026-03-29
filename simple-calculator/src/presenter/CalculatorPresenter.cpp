@@ -233,8 +233,3 @@ void CalculatorPresenter::setError(bool error) {
         emit isErrorChanged();
     }
 }
-
-
-// знак +/- не работает
-// подумать надо ли приотритет операций
-// изменить тесты
