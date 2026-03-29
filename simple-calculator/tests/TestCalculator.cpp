@@ -20,13 +20,17 @@ private slots:
     void input_leadingZeros();
     void input_signToggle();
     void input_dotAsFirstChar();
-
+    void input_signToggleFull();      // Проверка числа и истории
 
     void flow_livePreview();        // Проверка: результат считается при наборе цифр
     void flow_simpleChain();       // 10 / 2 + 5 = 15
     void flow_multiChainNoEqual(); // 75 * 4 * 4
     void flow_resetAfterEqual();   // Ввод цифры после "="
     void flow_clearEverything();    // Проверка CE
+
+
+    void flow_signToggleInChain();    // Проверка смены знака во время операции
+    void flow_signToggleAfterEqual(); // Проверка смены знака итогового результата
 
 
 private:
@@ -172,6 +176,57 @@ void TestCalculator::flow_clearEverything() {
     QCOMPARE(presenter->history(), QString("7"));
 }
 
+void TestCalculator::input_signToggleFull() {
+    presenter->processInput("5");
+    presenter->processInput("0");
+    presenter->processInput("+/-");
+
+    QCOMPARE(presenter->display(), QString("-50"));
+    QCOMPARE(presenter->history(), QString("-50"));
+
+    presenter->processInput("+/-");
+    QCOMPARE(presenter->display(), QString("50"));
+    QCOMPARE(presenter->history(), QString("50"));
+}
+
+void TestCalculator::flow_signToggleInChain() {
+
+    presenter->processInput("1");
+    presenter->processInput("0");
+    presenter->processInput("+");
+    presenter->processInput("5");
+
+    QCOMPARE(presenter->display(), QString("15"));
+
+    presenter->processInput("+/-");
+
+    QCOMPARE(presenter->display(), QString("5"));
+    QCOMPARE(presenter->history(), QString("10 + -5"));
+
+    presenter->processInput("=");
+    QCOMPARE(presenter->display(), QString("5"));
+}
+
+void TestCalculator::flow_signToggleAfterEqual() {
+    presenter->processInput("1");
+    presenter->processInput("0");
+    presenter->processInput("-");
+    presenter->processInput("2");
+    presenter->processInput("=");
+
+    QCOMPARE(presenter->display(), QString("8"));
+
+    presenter->processInput("+/-");
+
+    QCOMPARE(presenter->display(), QString("-8"));
+    QCOMPARE(presenter->history(), QString("-8"));
+
+    presenter->processInput("+");
+    presenter->processInput("3");
+
+    QCOMPARE(presenter->display(), QString("-5"));
+    QCOMPARE(presenter->history(), QString("-8 + 3"));
+}
 
 QTEST_MAIN(TestCalculator)
 #include "TestCalculator.moc"

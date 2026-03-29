@@ -49,7 +49,7 @@ void CalculatorPresenter::processInput(const QString &key) {
 
     if (m_isFinalResult) {
         QString currentResult = m_display;
-        updateHistory(currentResult + " " + key);
+        updateHistory(currentResult + " " + key + " ");
 
         m_model.clear();
         m_model.setLeftOperand(currentResult.toDouble());
@@ -175,8 +175,42 @@ void CalculatorPresenter::handleClear() {
 }
 
 void CalculatorPresenter::handleSignChange() {
-    double val = m_display.toDouble();
-    updateDisplay(QString::number(val * -1));
+    if (m_isError) return;
+
+
+    QString target = m_currentInput;
+    if (target.isEmpty()) {
+        target = m_display.isEmpty() ? "0" : m_display;
+    }
+
+    double val = target.toDouble();
+    if (val == 0.0) return;
+
+    val *= -1;
+    QString oldInput = m_currentInput;
+    m_currentInput = QString::number(val, 'g', 10);
+
+    if (!oldInput.isEmpty() && m_history.endsWith(oldInput)) {
+        QString baseHistory = m_history.left(m_history.length() - oldInput.length());
+        updateHistory(baseHistory + m_currentInput);
+    } else if (m_isFinalResult) {
+
+        updateHistory(m_currentInput);
+        m_isFinalResult = false;
+    } else if (m_currentInput != "0") {
+
+        updateHistory(m_currentInput);
+    }
+
+    if (m_model.hasStrategy()) {
+        m_model.setRightOperand(val);
+        try {
+            double res = m_model.calculatePreview();
+            updateDisplay(QString::number(res, 'g', 10));
+        } catch (...) {}
+    } else {
+        updateDisplay(m_currentInput);
+    }
 }
 
 void CalculatorPresenter::updateDisplay(const QString &value) {
@@ -199,3 +233,8 @@ void CalculatorPresenter::setError(bool error) {
         emit isErrorChanged();
     }
 }
+
+
+// знак +/- не работает
+// подумать надо ли приотритет операций
+// изменить тесты
