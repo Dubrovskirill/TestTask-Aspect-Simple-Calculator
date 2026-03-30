@@ -1,5 +1,5 @@
-#include "arithmeticfactory.h"
-#include "arithmeticstrategies.h"
+#include "ArithmeticFactory.h"
+#include "ArithmeticStrategies.h"
 
 std::unique_ptr<IArithmeticStrategy> ArithmeticFactory::create(const QString &op) {
     const auto& creators = getCreatorsMap();
